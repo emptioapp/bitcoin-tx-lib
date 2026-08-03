@@ -1,6 +1,6 @@
 import { OP_CODES } from "../constants/opcodes";
 import { ECPairKey } from "../ecpairkey";
-import { InputTransaction, OutputTransaction } from "../types"
+import { BNetwork, InputTransaction, OutputTransaction } from "../types"
 import { getBytesCount, hash256, hexToBytes, numberToHex, numberToHexLE, numberToVarint } from "../utils"
 import { Address } from "../utils/address";
 import { ByteBuffer } from "../utils/buffer";
@@ -255,11 +255,11 @@ export abstract class TransactionBuilder
      * @param output The output to validate.
      * @param outputs The current list of outputs.
      */
-    protected validateOutput(output: OutputTransaction, outputs: OutputTransaction[]) : void 
+    protected validateOutput(output: OutputTransaction, outputs: OutputTransaction[], network?: BNetwork) : void
     {
         if(!Number.isSafeInteger(output.amount) || output.amount <= 0 || output.amount > TransactionBuilder.MAX_MONEY)
             throw new Error("Expected a valid amount")
-        if(!Address.isValid(output.address))
+        if(!Address.isValid(output.address, network))
             throw new Error("Expected a valid address to output")
         if(outputs.some(o => o.address == output.address))
             throw new Error("An output with this address has already been added")

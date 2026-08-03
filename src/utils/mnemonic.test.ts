@@ -120,5 +120,17 @@ describe('MnemonicUtils', () => {
             const word = MnemonicUtils.getRandomWord();
             expect(wordlist).toContain(word);
         });
+
+        test('should not use Math.random (must use a cryptographically secure source)', () => {
+            const spy = jest.spyOn(Math, 'random');
+            MnemonicUtils.getRandomWord();
+            expect(spy).not.toHaveBeenCalled();
+            spy.mockRestore();
+        });
+
+        test('should produce varied words across multiple calls', () => {
+            const words = new Set(Array.from({ length: 25 }, () => MnemonicUtils.getRandomWord()));
+            expect(words.size).toBeGreaterThan(1);
+        });
     });
 });

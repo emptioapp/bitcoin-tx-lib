@@ -1,6 +1,6 @@
 {
     "name": "bitcoin-tx-lib",
-    "version": "3.1.2",
+    "version": "3.2.0",
     "description": "A Typescript library for building and signing Bitcoin transactions",
     "scripts": {
         "test": "jest",

@@ -1,3 +1,4 @@
+import { bech32 } from "bech32"
 import { Address } from "./address"
 
 describe("address functions", () => {
@@ -53,6 +54,25 @@ describe("address functions", () => {
         // invalid P2PKH
         isValid = Address.isValid("mvrUomyGLk1qR31K8JjL1kErvULiPP3sVfm")
         expect(isValid).toBe(false)
+    })
+
+    test("address is invalid when witness program length is not 20 or 32 bytes", () => {
+        const words = bech32.toWords(new Uint8Array(4).fill(0xaa))
+        const address = bech32.encode("bc", [0, ...words])
+        expect(Address.isValid(address)).toBe(false)
+    })
+
+    test("address is invalid when witness version is not 0", () => {
+        const words = bech32.toWords(new Uint8Array(20).fill(0x11))
+        const address = bech32.encode("bc", [3, ...words])
+        expect(Address.isValid(address)).toBe(false)
+    })
+
+    test("address is invalid when it belongs to a different network than expected", () => {
+        expect(Address.isValid("tb1q4ppec5re8vpnm7qsmcjhkvf3gj500mwfw0yxaj", "testnet")).toBe(true)
+        expect(Address.isValid("tb1q4ppec5re8vpnm7qsmcjhkvf3gj500mwfw0yxaj", "mainnet")).toBe(false)
+        expect(Address.isValid("mvreowyGk1qR31K8JjL1kErvULiPP3sVfm", "testnet")).toBe(true)
+        expect(Address.isValid("mvreowyGk1qR31K8JjL1kErvULiPP3sVfm", "mainnet")).toBe(false)
     })
 
     test("get ripemd160 from address", () => {  

@@ -1,6 +1,7 @@
 import { generateMnemonic, mnemonicToEntropy, entropyToMnemonic, mnemonicToSeedSync,
     validateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
+import { randomBytes } from '@noble/hashes/utils.js';
 
 /**
  * Utility class for BIP-39 mnemonic generation and wordlist management.
@@ -94,12 +95,13 @@ export class MnemonicUtils
 
     /**
     * Returns a random word from the BIP-39 wordlist.
+    * Uses a cryptographically secure random source (not `Math.random()`).
     *
     * @returns {string} A randomly selected word.
     */
-    public static getRandomWord(): string 
+    public static getRandomWord(): string
     {
-        const index = Math.floor(Math.random() * wordlist.length);
+        const index = new DataView(randomBytes(4).buffer).getUint32(0) % wordlist.length;
         return wordlist[index];
     }
 

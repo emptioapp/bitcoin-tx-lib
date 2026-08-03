@@ -84,14 +84,9 @@ export class Address {
         throw new Error("address not supported")
     } 
 
-    static isValid(address: string) : boolean {
+    static isValid(address: string, network?: BNetwork) : boolean {
         try {
-            let script = addressToScriptPubKey(address)
-
-            if(script[1] == 0x14 && script.slice(2).length != 0x14) return false
-            if(script[1] == 0x20 && script.slice(2).length != 0x20) return false
-            if(script[0] == 0x76 && script.slice(3, -2).length != 0x14) return false
-
+            addressToScriptPubKey(address, network)
             return true
         } catch { return false }
     }

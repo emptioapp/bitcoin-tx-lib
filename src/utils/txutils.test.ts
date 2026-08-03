@@ -1,3 +1,4 @@
+import { bech32 } from "bech32"
 import { addressToScriptPubKey, pubkeyToScriptCode, scriptPubkeyToScriptCode } from "./txutils"
 import { bytesToHex } from "./index"
 
@@ -56,6 +57,83 @@ describe("addressToScriptPubKey", () => {
 
     test("empty string throws", () => {
         expect(() => addressToScriptPubKey("")).toThrow()
+    })
+
+    describe("witness version and program length validation (BIP141)", () => {
+        test("rejects a witness version other than 0", () => {
+            const words = bech32.toWords(new Uint8Array(20).fill(0x11))
+            const address = bech32.encode("bc", [3, ...words])
+            expect(() => addressToScriptPubKey(address)).toThrow("Unsupported witness version")
+        })
+
+        test("rejects a v0 program that is not 20 or 32 bytes (4 bytes)", () => {
+            const words = bech32.toWords(new Uint8Array(4).fill(0xaa))
+            const address = bech32.encode("bc", [0, ...words])
+            expect(() => addressToScriptPubKey(address)).toThrow("Invalid witness program length")
+        })
+
+        test("rejects a v0 program that is not 20 or 32 bytes (10 bytes)", () => {
+            const words = bech32.toWords(new Uint8Array(10).fill(0xaa))
+            const address = bech32.encode("bc", [0, ...words])
+            expect(() => addressToScriptPubKey(address)).toThrow("Invalid witness program length")
+        })
+
+        test("accepts a valid v0/20-byte program (P2WPKH)", () => {
+            const words = bech32.toWords(new Uint8Array(20).fill(0x22))
+            const address = bech32.encode("bc", [0, ...words])
+            const script = addressToScriptPubKey(address)
+            expect(script.length).toBe(22)
+            expect(script[0]).toBe(0x00)
+            expect(script[1]).toBe(0x14)
+        })
+
+        test("accepts a valid v0/32-byte program (P2WSH)", () => {
+            const words = bech32.toWords(new Uint8Array(32).fill(0x33))
+            const address = bech32.encode("bc", [0, ...words])
+            const script = addressToScriptPubKey(address)
+            expect(script.length).toBe(34)
+            expect(script[0]).toBe(0x00)
+            expect(script[1]).toBe(0x20)
+        })
+    })
+
+    describe("network cross-check", () => {
+        const mainnetP2PKH = "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+        const testnetP2PKH = "mzzD7VraX6Vt5XPCZqRDsBkNey9wJL7VA4"
+        const testnetBech32 = "tb1qrzxautduewud394haxv085exvcwm9hcw72ugth"
+        // same witness program as testnetBech32, re-encoded with the mainnet HRP
+        const mainnetBech32 = bech32.encode("bc", bech32.decode(testnetBech32).words)
+
+        test("P2PKH: throws when mainnet address is checked against testnet", () => {
+            expect(() => addressToScriptPubKey(mainnetP2PKH, "testnet")).toThrow("Address network mismatch")
+        })
+
+        test("P2PKH: throws when testnet address is checked against mainnet", () => {
+            expect(() => addressToScriptPubKey(testnetP2PKH, "mainnet")).toThrow("Address network mismatch")
+        })
+
+        test("P2PKH: passes when network matches", () => {
+            expect(() => addressToScriptPubKey(mainnetP2PKH, "mainnet")).not.toThrow()
+            expect(() => addressToScriptPubKey(testnetP2PKH, "testnet")).not.toThrow()
+        })
+
+        test("bech32: throws when mainnet address is checked against testnet", () => {
+            expect(() => addressToScriptPubKey(mainnetBech32, "testnet")).toThrow("Address network mismatch")
+        })
+
+        test("bech32: throws when testnet address is checked against mainnet", () => {
+            expect(() => addressToScriptPubKey(testnetBech32, "mainnet")).toThrow("Address network mismatch")
+        })
+
+        test("bech32: passes when network matches", () => {
+            expect(() => addressToScriptPubKey(mainnetBech32, "mainnet")).not.toThrow()
+            expect(() => addressToScriptPubKey(testnetBech32, "testnet")).not.toThrow()
+        })
+
+        test("omitting the network param skips the cross-check (backward compatible)", () => {
+            expect(() => addressToScriptPubKey(testnetBech32)).not.toThrow()
+            expect(() => addressToScriptPubKey(mainnetP2PKH)).not.toThrow()
+        })
     })
 })
 

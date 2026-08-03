@@ -22,12 +22,16 @@ export function bytesToHex(bytes: Uint8Array): string {
 }
 
 export function hexToBytes(hex: string, hexadecimal: boolean = true): Uint8Array {
-    
+
     if(hex.length <= 0)
         throw new Error("hex value is empty")
 
-    if (hexadecimal && hex.length % 2 !== 0)
-        throw new Error("Invalid hex value!")
+    if (hexadecimal) {
+        if (hex.length % 2 !== 0)
+            throw new Error("Invalid hex value!")
+        if (!/^[0-9a-fA-F]+$/.test(hex))
+            throw new Error("Invalid hex value, contains non-hexadecimal characters")
+    }
 
     let bytes = new Uint8Array(hexadecimal ? hex.length / 2 : hex.length)
 

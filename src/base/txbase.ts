@@ -76,9 +76,9 @@ export abstract class BaseTransaction extends TransactionBuilder
      * Validates for duplicate address and required fields.
      * @param output The transaction output to add.
      */
-    public addOutput(output: OutputTransaction) 
+    public addOutput(output: OutputTransaction)
     {
-        this.validateOutput(output, this.outputs)
+        this.validateOutput(output, this.outputs, this.pairKey.network)
 
         this.outputs.push(output)
         this.cachedata.clear()

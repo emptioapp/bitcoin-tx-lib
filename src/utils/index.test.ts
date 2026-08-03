@@ -56,6 +56,16 @@ describe("utils", () => {
             expect(() => hexToBytes("f")).toThrow()
             expect(() => hexToBytes("abc")).toThrow()
         })
+
+        test("throws on non-hexadecimal characters instead of silently zeroing them", () => {
+            expect(() => hexToBytes("zz00ff11")).toThrow("Invalid hex value, contains non-hexadecimal characters")
+            expect(() => hexToBytes("gg")).toThrow("Invalid hex value, contains non-hexadecimal characters")
+            expect(() => hexToBytes("00ffgg11")).toThrow("Invalid hex value, contains non-hexadecimal characters")
+        })
+
+        test("accepts uppercase hex characters", () => {
+            expect(bytesToHex(hexToBytes("AABBCCDD"))).toBe("aabbccdd")
+        })
     })
 
     describe("sha256 and hash256", () => {

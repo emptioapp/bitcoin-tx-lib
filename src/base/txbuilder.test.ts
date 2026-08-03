@@ -7,7 +7,7 @@ class TestBuilder extends TransactionBuilder {
     public testScriptSig(input: InputTransaction, params: SigParams) { return this.generateScriptSig(input, params) }
     public testWitness(input: InputTransaction, params: SigParams) { return this.generateWitness(input, params) }
     public testValidateInput(input: InputTransaction, inputs: InputTransaction[]) { return this.validateInput(input, inputs) }
-    public testValidateOutput(output: OutputTransaction, outputs: OutputTransaction[]) { return this.validateOutput(output, outputs) }
+    public testValidateOutput(output: OutputTransaction, outputs: OutputTransaction[], network?: "mainnet" | "testnet") { return this.validateOutput(output, outputs, network) }
     public testOutputsRaw(outputs: OutputTransaction[]) { return this.outputsRaw(outputs) }
 }
 
@@ -253,6 +253,24 @@ describe("TransactionBuilder", () => {
 
         test("duplicate address throws", () => {
             expect(() => builder.testValidateOutput(baseOutput, [baseOutput])).toThrow("already been added")
+        })
+
+        test("network param rejects an address from a different network", () => {
+            const testnetAddress = new ECPairKey({ network: "testnet" }).getAddress()
+            expect(() => builder.testValidateOutput({ address: testnetAddress, amount: 1000 }, [], "mainnet"))
+                .toThrow("valid address")
+        })
+
+        test("network param accepts an address from the matching network", () => {
+            const mainnetAddress = new ECPairKey({ network: "mainnet" }).getAddress()
+            expect(() => builder.testValidateOutput({ address: mainnetAddress, amount: 1000 }, [], "mainnet"))
+                .not.toThrow()
+        })
+
+        test("omitting network param skips the network cross-check", () => {
+            const testnetAddress = new ECPairKey({ network: "testnet" }).getAddress()
+            expect(() => builder.testValidateOutput({ address: testnetAddress, amount: 1000 }, []))
+                .not.toThrow()
         })
     })
 

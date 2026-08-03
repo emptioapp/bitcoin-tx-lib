@@ -73,6 +73,18 @@ describe("BaseTransaction", () => {
         expect(() => tx.addOutput(validOutput)).toThrow("An output with this address has already been added")
     })
 
+    test("addOutput throws when output address network differs from the signing key's network", () => {
+        // key defaults to mainnet, so a testnet-formatted destination must be rejected
+        const testnetAddress = new ECPairKey({ network: "testnet" }).getAddress()
+        expect(() => tx.addOutput({ address: testnetAddress, amount: 4900 }))
+            .toThrow("Expected a valid address to output")
+    })
+
+    test("addOutput accepts an output address matching the signing key's network", () => {
+        const mainnetAddress = new ECPairKey({ network: "mainnet" }).getAddress()
+        expect(() => tx.addOutput({ address: mainnetAddress, amount: 4900 })).not.toThrow()
+    })
+
     test("clear resets inputs, outputs and cache", () => {
         tx.addInput(validInput)
         tx.addOutput(validOutput)
