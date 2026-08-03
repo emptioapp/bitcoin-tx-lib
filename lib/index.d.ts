@@ -152,7 +152,7 @@ declare abstract class TransactionBuilder {
      * @param output The output to validate.
      * @param outputs The current list of outputs.
      */
-    protected validateOutput(output: OutputTransaction, outputs: OutputTransaction[]): void;
+    protected validateOutput(output: OutputTransaction, outputs: OutputTransaction[], network?: BNetwork): void;
     protected validateTransaction(inputs: InputTransaction[], outputs: OutputTransaction[]): void;
     protected sumInputs(inputs: InputTransaction[]): number;
     protected sumOutputs(outputs: OutputTransaction[]): number;
@@ -716,7 +716,7 @@ declare class Address {
     static fromHash({ ripemd160, type, network }: HashProps): string;
     static getScriptPubkey(address: string): string;
     static getRipemd160(address: string): string;
-    static isValid(address: string): boolean;
+    static isValid(address: string, network?: BNetwork): boolean;
 }
 
 /**
@@ -770,6 +770,7 @@ declare class MnemonicUtils {
     static mnemonicToSeed(mnemonic: string, passphrase?: string): Uint8Array;
     /**
     * Returns a random word from the BIP-39 wordlist.
+    * Uses a cryptographically secure random source (not `Math.random()`).
     *
     * @returns {string} A randomly selected word.
     */
