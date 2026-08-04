@@ -1,6 +1,6 @@
 {
     "name": "bitcoin-tx-lib",
-    "version": "3.2.0",
+    "version": "3.2.1",
     "description": "A Typescript library for building and signing Bitcoin transactions",
     "scripts": {
         "test": "jest",
@@ -54,5 +54,8 @@
         "@scure/bip32": "^2.2.0",
         "@scure/bip39": "^1.6.0",
         "bech32": "^2.0.0"
+    },
+    "overrides": {
+        "esbuild": "^0.28.1"
     }
 }
